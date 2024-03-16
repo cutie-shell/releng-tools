@@ -340,32 +340,35 @@ class SlimPackage:
 			if starting_version is not None:
 				break
 
-		if not self.is_native and not "-" in starting_version:
-			# Non-native package, but version has not yet a debian revision
-			# This means that we probably have picked up the version
-			# from an "upstream/" tag, so we should add "-1" manually
-			# since there is not a debian release yet -- and also
-			# switch to ~ rather than + since we're going to use
-			# the new version
-			version_template = "%s-1~git%s"
-		else:
-			# Using the old version as base. If the package is non-native,
-			# the old revision has been already picked up so don't
-			# really worry about that
-			version_template = "%s+git%s"
+		if self.tag == None:
+			if not self.is_native and not "-" in starting_version:
+				# Non-native package, but version has not yet a debian revision
+				# This means that we probably have picked up the version
+				# from an "upstream/" tag, so we should add "-1" manually
+				# since there is not a debian release yet -- and also
+				# switch to ~ rather than + since we're going to use
+				# the new version
+				version_template = "%s-1~git%s"
+			else:
+				# Using the old version as base. If the package is non-native,
+				# the old revision has been already picked up so don't
+				# really worry about that
+				version_template = "%s+git%s"
 
-		self._version = version_template % (
-			starting_version,
-			".".join(
-				[
-					datetime.datetime.fromtimestamp(
-						self.git_repository.commit(rev=self.commit_hash).committed_date
-					).strftime("%Y%m%d%H%M%S"),
-					self.commit_hash[0:7],
-					self.comment
-				]
+			self._version = version_template % (
+				starting_version,
+				".".join(
+					[
+						datetime.datetime.fromtimestamp(
+							self.git_repository.commit(rev=self.commit_hash).committed_date
+						).strftime("%Y%m%d%H%M%S"),
+						self.commit_hash[0:7],
+						self.comment
+					]
+				)
 			)
-		)
+		else:
+			self._version = starting_version
 
 		if not self.is_native and not "-" in self._version:
 			# This could only happen when a version for a non-native package
